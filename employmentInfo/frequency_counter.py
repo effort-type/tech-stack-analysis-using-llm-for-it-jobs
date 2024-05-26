@@ -2,6 +2,62 @@ import json
 from collections import Counter
 import pandas as pd
 
+import pymysql
+import os
+from dotenv import load_dotenv
+
+
+def save_to_db(data):
+    """
+    데이터를 MySQL 데이터베이스에 저장하는 함수
+
+    :param data: dict, 저장할 딕셔너리 (기술 스택, 빈도)
+    :return: None
+    """
+
+    connection = None
+    try:
+        load_dotenv('.env')
+
+        print(f"{os.getenv('HOST_ADDRESS')}, {os.getenv('USER_ID')}, {os.getenv('USER_PW')}")
+
+        # 데이터베이스 연결
+        connection = pymysql.connect(
+            host=os.getenv("HOST_ADDRESS"),  # MySQL 서버 호스트
+            port=int(os.getenv("PORT")),
+            user=os.getenv("USER_ID"),  # MySQL 사용자 이름
+            password=os.getenv("USER_PW"),  # MySQL 비밀번호
+            database=os.getenv("DATABASE_NAME"),  # MySQL 데이터베이스 이름
+            charset='utf8',  # 데이터베이스 문자셋
+            cursorclass=pymysql.cursors.DictCursor,
+            auth_plugin_map={
+                'mysql_native_password': 'pymysql.sha256_password'
+            }
+        )
+
+        with connection.cursor() as cursor:
+            print("\n데이터 삽입 시작\n\n")
+            print(data)
+
+            # tech와 freq 리스트의 각 항목을 삽입
+            for tech, freq in zip(data['tech'], data['freq']):
+                cursor.execute('''
+                    INSERT INTO techFrequency (skill, frequency)
+                    VALUES (%s, %s)
+                ''', (tech, freq))
+
+            # 커밋
+            connection.commit()
+            print("\n데이터 삽입 종료\n\n")
+            print("Data successfully saved to the database")
+
+    except pymysql.MySQLError as e:
+        print(f"Error: {e}")
+
+    finally:
+        if connection:
+            connection.close()
+            print("MySQL connection is closed")
 
 def save_to_excel(data, file_path):
     """
@@ -97,3 +153,4 @@ def frequency_counter():
 if __name__ == "__main__":
     frequency = frequency_counter()
     save_to_excel(frequency, "techInfoData/frequency_counter.xlsx")
+    save_to_db(frequency)
