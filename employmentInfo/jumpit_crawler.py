@@ -137,7 +137,11 @@ def crawler():
             temp_all = {
                 "companyName": data['companyName'],
                 "location": data['locations'][0],
-                "jobCategory": data['jobCategory']
+                "jobCategory": data['jobCategory'],
+                "scrapCount": data['scrapCount'],
+                "viewCount": data['viewCount'],
+                "minCareer": data['minCareer'],
+                "maxCareer": data['maxCareer']
             }
 
             temp_skill = []
@@ -160,6 +164,6 @@ if __name__ == "__main__":
     print("\n\ncrawler() 종료\n\n")
     print(tech_info)
 
-    # save_file_json(tech_info, "techInfoData/tech_info.json")
-    # save_to_excel(tech_info, "techInfoData/tech_info.xlsx")
-    save_to_db(tech_info)
+    save_file_json(tech_info, "techInfoData/tech_info.json")
+    save_to_excel(tech_info, "techInfoData/tech_info.xlsx")
+    # save_to_db(tech_info)
